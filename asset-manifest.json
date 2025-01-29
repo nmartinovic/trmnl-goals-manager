@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/trmnl-goals-manager/static/css/main.cf890fdb.css",
+    "main.js": "/trmnl-goals-manager/static/js/main.799148e2.js",
+    "index.html": "/trmnl-goals-manager/index.html",
+    "main.cf890fdb.css.map": "/trmnl-goals-manager/static/css/main.cf890fdb.css.map",
+    "main.799148e2.js.map": "/trmnl-goals-manager/static/js/main.799148e2.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.cf890fdb.css",
+    "static/js/main.799148e2.js"
+  ]
+}
