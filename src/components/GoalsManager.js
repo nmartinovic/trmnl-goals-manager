@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, Trash2, Send } from 'lucide-react';
 
 const GoalsManager = () => {
@@ -6,6 +6,18 @@ const GoalsManager = () => {
   const [monthlyGoals, setMonthlyGoals] = useState(['']);
   const [webhookUrl, setWebhookUrl] = useState('https://usetrmnl.com/api/custom_plugins/ac02e520-e3eb-4e1e-9fe0-3fef78687335');
   const [status, setStatus] = useState('');
+  const [lastSubmittedGoals, setLastSubmittedGoals] = useState(null);
+
+  // Load saved goals from localStorage on component mount
+  useEffect(() => {
+    const savedGoals = localStorage.getItem('trmnlGoals');
+    if (savedGoals) {
+      const { weekly_goals, monthly_goals } = JSON.parse(savedGoals);
+      setWeeklyGoals(weekly_goals.length ? weekly_goals : ['']);
+      setMonthlyGoals(monthly_goals.length ? monthly_goals : ['']);
+      setLastSubmittedGoals({ weekly_goals, monthly_goals });
+    }
+  }, []);
 
   const handleAddGoal = (type) => {
     if (type === 'weekly') {
@@ -46,10 +58,11 @@ const GoalsManager = () => {
     const filteredWeeklyGoals = weeklyGoals.filter(goal => goal.trim() !== '');
     const filteredMonthlyGoals = monthlyGoals.filter(goal => goal.trim() !== '');
 
+    // Use last submitted goals if current ones are empty
     const payload = {
       merge_variables: {
-        weekly_goals: filteredWeeklyGoals,
-        monthly_goals: filteredMonthlyGoals
+        weekly_goals: filteredWeeklyGoals.length ? filteredWeeklyGoals : (lastSubmittedGoals?.weekly_goals || []),
+        monthly_goals: filteredMonthlyGoals.length ? filteredMonthlyGoals : (lastSubmittedGoals?.monthly_goals || [])
       }
     };
 
@@ -67,17 +80,23 @@ const GoalsManager = () => {
         body: JSON.stringify(payload),
       });
 
-      console.log('Response:', response); // Debug log
+      console.log('Response:', response);
       const responseData = await response.text();
-      console.log('Response data:', responseData); // Debug log
+      console.log('Response data:', responseData);
 
       if (response.ok) {
+        // Save successful submission to localStorage
+        localStorage.setItem('trmnlGoals', JSON.stringify({
+          weekly_goals: payload.merge_variables.weekly_goals,
+          monthly_goals: payload.merge_variables.monthly_goals
+        }));
+        setLastSubmittedGoals(payload.merge_variables);
         setStatus('Goals updated successfully!');
       } else {
         setStatus(`Error updating goals. Server responded with status ${response.status}`);
       }
     } catch (error) {
-      console.error('Error details:', error); // Debug log
+      console.error('Error details:', error);
       setStatus('Error: ' + error.message);
     }
   };
