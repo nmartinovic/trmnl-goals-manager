@@ -8,7 +8,6 @@ const GoalsManager = () => {
   const [status, setStatus] = useState('');
   const [lastSubmittedGoals, setLastSubmittedGoals] = useState(null);
 
-  // Load saved goals from localStorage on component mount
   useEffect(() => {
     const savedGoals = localStorage.getItem('trmnlGoals');
     if (savedGoals) {
@@ -58,7 +57,6 @@ const GoalsManager = () => {
     const filteredWeeklyGoals = weeklyGoals.filter(goal => goal.trim() !== '');
     const filteredMonthlyGoals = monthlyGoals.filter(goal => goal.trim() !== '');
 
-    // Use last submitted goals if current ones are empty
     const payload = {
       merge_variables: {
         weekly_goals: filteredWeeklyGoals.length ? filteredWeeklyGoals : (lastSubmittedGoals?.weekly_goals || []),
@@ -85,7 +83,6 @@ const GoalsManager = () => {
       console.log('Response data:', responseData);
 
       if (response.ok) {
-        // Save successful submission to localStorage
         localStorage.setItem('trmnlGoals', JSON.stringify({
           weekly_goals: payload.merge_variables.weekly_goals,
           monthly_goals: payload.merge_variables.monthly_goals
@@ -102,72 +99,86 @@ const GoalsManager = () => {
   };
 
   const renderGoalInputs = (type, goals, setGoals) => (
-    <div className="mb-8">
-      <h2 className="text-xl font-bold mb-4">{type === 'weekly' ? 'Weekly' : 'Monthly'} Goals</h2>
-      {goals.map((goal, index) => (
-        <div key={index} className="flex mb-2">
-          <input
-            type="text"
-            value={goal}
-            onChange={(e) => handleGoalChange(type, index, e.target.value)}
-            placeholder={`Enter ${type} goal`}
-            className="flex-grow p-2 border rounded mr-2"
-          />
-          <button
-            onClick={() => handleRemoveGoal(type, index)}
-            className="p-2 text-red-500 hover:text-red-700"
-            aria-label="Remove goal"
-          >
-            <Trash2 size={20} />
-          </button>
-        </div>
-      ))}
+    <div className="bg-white rounded-lg p-6 shadow-md mb-6">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">
+        {type === 'weekly' ? 'Weekly' : 'Monthly'} Goals
+      </h2>
+      <div className="space-y-3">
+        {goals.map((goal, index) => (
+          <div key={index} className="flex items-center gap-2">
+            <input
+              type="text"
+              value={goal}
+              onChange={(e) => handleGoalChange(type, index, e.target.value)}
+              placeholder={`Enter ${type} goal`}
+              className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            />
+            <button
+              onClick={() => handleRemoveGoal(type, index)}
+              className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              aria-label="Remove goal"
+            >
+              <Trash2 size={20} />
+            </button>
+          </div>
+        ))}
+      </div>
       <button
         onClick={() => handleAddGoal(type)}
-        className="flex items-center mt-2 text-blue-500 hover:text-blue-700"
+        className="mt-4 flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors"
       >
-        <PlusCircle size={20} className="mr-1" />
+        <PlusCircle size={20} className="mr-2" />
         Add {type} goal
       </button>
     </div>
   );
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold mb-6 text-center">TRMNL Goals Manager</h1>
-      
-      <div className="mb-6">
-        <label className="block text-sm font-medium mb-2">
-          TRMNL Webhook URL
-        </label>
-        <input
-          type="text"
-          value={webhookUrl}
-          onChange={(e) => setWebhookUrl(e.target.value)}
-          placeholder="Enter your TRMNL webhook URL"
-          className="w-full p-2 border rounded"
-        />
-      </div>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700">
+            <h1 className="text-3xl font-bold text-white text-center">
+              TRMNL Goals Manager
+            </h1>
+          </div>
+          
+          <div className="p-8">
+            <div className="bg-white rounded-lg p-6 shadow-md mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                TRMNL Webhook URL
+              </label>
+              <input
+                type="text"
+                value={webhookUrl}
+                onChange={(e) => setWebhookUrl(e.target.value)}
+                placeholder="Enter your TRMNL webhook URL"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              />
+            </div>
 
-      {renderGoalInputs('weekly', weeklyGoals, setWeeklyGoals)}
-      {renderGoalInputs('monthly', monthlyGoals, setMonthlyGoals)}
+            {renderGoalInputs('weekly', weeklyGoals, setWeeklyGoals)}
+            {renderGoalInputs('monthly', monthlyGoals, setMonthlyGoals)}
 
-      <div className="text-center">
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 flex items-center mx-auto"
-        >
-          <Send size={20} className="mr-2" />
-          Update Goals
-        </button>
-        {status && (
-          <p className={`mt-4 ${
-            status.includes('Error') ? 'text-red-500' : 
-            status.includes('success') ? 'text-green-500' : 'text-blue-500'
-          }`}>
-            {status}
-          </p>
-        )}
+            <div className="text-center mt-8">
+              <button
+                onClick={handleSubmit}
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all inline-flex items-center justify-center font-medium"
+              >
+                <Send size={20} className="mr-2" />
+                Update Goals
+              </button>
+              {status && (
+                <p className={`mt-4 text-sm font-medium ${
+                  status.includes('Error') ? 'text-red-600' : 
+                  status.includes('success') ? 'text-green-600' : 'text-blue-600'
+                }`}>
+                  {status}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
